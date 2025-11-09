@@ -1,30 +1,55 @@
-import { useState } from 'react'
-import './App.css'
+"use client"
+
+import { Outlet, useLocation } from "react-router-dom"
+import { useEffect, useState } from "react"
+import useRefreshToken from "./hooks/useRefreshToken.js"
+import { Header, Sidebar,FilterBar } from "./components"
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const refresh = useRefreshToken()
+  const location =useLocation()
+  const isWatchPage=location.pathname.startsWith('/watch/')
+  const mainContentMarginClass = isWatchPage ? 'ml-0' : 'sm:ml-64';
 
-  return (
-    <>
-      <h1 className="text-7xl font-bold flex justify-center ">
-      Streamsy
-      </h1>
-      {/* Open the modal using document.getElementById('ID').showModal() method */}
-      <button className="btn m-10" onClick={()=>document.getElementById('my_modal_1').showModal()}>open modal</button>
-      <dialog id="my_modal_1" className="modal">
-        <div className="modal-box">
-          <h3 className="font-bold text-lg">Hello!</h3>
-          <p className="py-4">Press ESC key or click the button below to close</p>
-          <div className="modal-action">
-            <form method="dialog">
-              {/* if there is a button in form, it will close the modal */}
-              <button className="btn">Close</button>
-            </form>
-          </div>
-        </div>
-      </dialog>
-    </>
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        await refresh()
+      } catch (err) {
+        console.error("Refresh error:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initializeApp()
+  }, [refresh])
+
+  return !loading ? (
+    <div className="min-h-screen bg-[#0f0f0f]">
+      <div className="fixed w-full top-0 left-0 z-20">
+        <Header />
+      </div>
+
+      <div className="flex pt-14">
+        {!isWatchPage && <Sidebar />}
+
+        <main className={` bg-[#0f0f0f] flex-1  ${mainContentMarginClass} min-h-[calc(100vh-3.5rem)] overflow-y-auto`}>
+         {!isWatchPage && <FilterBar/>} 
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  ) : (
+    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
+      <span className="loading loading-bars loading-lg"></span>
+    </div>
   )
 }
 
 export default App
+
+
+

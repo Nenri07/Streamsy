@@ -1,2 +1,41 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+
+
+    .scrollbar-hidden {
+    /* For Firefox */
+    scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+    /* For Webkit browsers (Chrome, Safari) */
+    width: 0px; /* Hides the vertical scrollbar */
+    height: 0px; /* Hides the horizontal scrollbar */
+}
+
+/* On hover, make the scrollbar visible */
+.scrollbar-hidden:hover::-webkit-scrollbar {
+    /* Define the look of the scrollbar on hover */
+    width: 8px; /* Width of the scrollbar */
+    height: 8px;
+    background-color: transparent; /* Optional: Sets the track color */
+}
+
+.scrollbar-hidden:hover::-webkit-scrollbar-thumb {
+    background-color: #555; /* YouTube-like dark gray thumb */
+    border-radius: 4px; /* Optional: Makes it rounded */
+    border: 2px solid #0f0f0f; /* Adds a border matching the sidebar background */
+}
+
+.navbar{
+    background-color: #0f0f0f;
+}
+.bcolor{
+        background-color: #0f0f0f;
+}
+main{
+    background-color: #0f0f0f;
+}
+*{
+font-family: "Roboto", sans-serif;}

@@ -5,6 +5,7 @@ import { apiError } from "../utils/apiError.js"
 import { apiResponse } from "../utils/apiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { uploadOnCloudinary } from "../utils/cloduinary.js"
+import { videoUploadtoAws } from "../utils/aws.js"
 
 
 
@@ -14,6 +15,7 @@ import { uploadOnCloudinary } from "../utils/cloduinary.js"
 
 // controllers/videoController.js
 //pending
+
 
 
 
@@ -158,7 +160,6 @@ const getUserAllVideos = asyncHandler(async (req, res) => {
 })
 //done
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description} = req.body
     // TODO: get video, upload to cloudinary, create video
 
     /// get data from the front end Title, description and video
@@ -184,37 +185,51 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
         } 
 
-            const videoPath= req.files?.videoFile[0].path
+            // const videoPath= req.files?.videoFile[0].path
+            const videoFile= req.files?.videoFile[0]
+            console.log("this is videoFiles:",videoFile);
+            
 
-            if (!videoPath) {
+            if (!videoFile) {
                throw new apiError(
                     400,
-                    "error requesting file to upload"
+                    "error requesting file to upload AWS"
                 )
 
             } 
-                const cloudinaryUrl=await uploadOnCloudinary(videoPath)
+                //old code 
+                // const cloudinaryUrl=await uploadOnCloudinary(videoPath)
+                const {key}=await videoUploadtoAws(
+                    title,
+                    videoFile.buffer
+                )
 
 
-                if (!cloudinaryUrl.url) {
+                if (!key) {
                    throw new apiError(
                         402,
                         "Server has issue on uploading file"
                     )
 
                 } 
-                    const thumbnailpath= req.files?.thumbnail[0]?.path
+                    const thumbnailFile= req.files?.thumbnail[0]
 
-                    if (!thumbnailpath) {
+
+                    if (!thumbnailFile) {
                         throw new apiError(
                             402,
                             "Error uploding the file error while uploading from client"
                         )
 
                     } 
-                        const cloudinarythumbnail=await uploadOnCloudinary(thumbnailpath)
+                        const cloudinarythumbnail=await uploadOnCloudinary(thumbnailFile.buffer,{
+                          folder:"thumbnails",
+                          resource_type:"image"
+                        })
+                        console.log("this is thumbnail info:",cloudinarythumbnail);
+                        
 
-                        if (!cloudinarythumbnail.url) {
+                        if (!cloudinarythumbnail.secure_url) {
                            throw new apiError(
                                 409,
                                 "Server side error while uploading the file"
@@ -223,12 +238,13 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 
                             const saveVideo= await Video.create({
-                               videoFile: cloudinaryUrl.url,
+                               videoFile: key,
+                               rawS3Key:key,
                                 Owner:req.user._id,
-                              thumbnail:cloudinarythumbnail.url,
-                                Title:title,
-                                Description:description,
-                                duration:cloudinaryUrl.duration
+                                thumbnail:cloudinarythumbnail.secure_url,
+                                Title:title.trim(),
+                                Description:description.trim(),
+                                status:"uploading"
                             })
 
                             if(saveVideo){
@@ -255,6 +271,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     }
 
 })
+
 const getVideoById = asyncHandler(async (req, res) => {
   try {
       const { videoId } = req.params

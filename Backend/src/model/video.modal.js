@@ -25,7 +25,7 @@ const videoSchema= Schema({
    },
    duration:{
         type:Number,
-        default:0
+        default:"0"
    },
    views:{
         type:Number,
@@ -35,8 +35,12 @@ const videoSchema= Schema({
     type:Boolean,
     deafult:false
    },
-    rawS3Key: { type: String },
-    hlsMasterUrl: { type: String },
+    rawS3Key: {
+    type: String
+    },
+    hlsMasterUrl: {
+    type: String
+    },
     status: { 
         type: String, 
         enum: ['uploading', 'processing', 'ready', 'failed'], 
